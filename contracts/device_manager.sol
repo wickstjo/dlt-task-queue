@@ -4,20 +4,18 @@ pragma experimental ABIEncoderV2;
 
 // IMPORTS
 import { Device } from './device.sol';
-import { UserManager } from './user_manager.sol';
 
 contract DeviceManager {
 
     // MAP OF ALL DEVICES & DEVICE COLLECTIONS
-    mapping (string => Device) devices;
-    mapping (address => string[]) collections;
+    mapping (string => Device) public devices;
+    mapping (address => string[]) public collections;
 
     // INIT STATUS
-    bool initialized = false;
+    bool public initialized = false;
 
-    // MANAGER REFERENCE
-    UserManager user_manager;
-    address task_manager;
+    // TASK MANAGER REF
+    address public task_manager;
 
     // FETCH DEVICE CONTRACT
     function fetch_device(string memory device_hash) public view returns(Device) {
@@ -30,32 +28,26 @@ contract DeviceManager {
     }
 
     // ADD NEW DEVICE
-    function create(string memory device_hash) public {
+    function create(string memory device_hash, address account) public {
 
         // IF THE CONTRACT HAS BEEN INITIALIZED
-        // IF THE USER IS REGISTERED
         require(initialized, 'contract has not been initialized');
-        require(user_manager.exists(msg.sender), 'you need to be a registered user');
 
         // INSTANTIATE A NEW DEVICE
-        Device device = new Device(msg.sender, task_manager);
+        Device device = new Device(msg.sender, account, task_manager);
 
         // PUSH IT TO BOTH CONTAINERS
         devices[device_hash] = device;
         collections[msg.sender].push(device_hash);
     }
 
-    // SET STATIC VARIABLES
-    function init(
-        address _user_manager,
-        address _task_manager
-    ) public {
+    // INITIALIZE
+    function init(address _task_manager) public {
 
         // IF THE CONTRACT HAS NOT BEEN INITIALIZED BEFORE
         require(!initialized, 'contract has already been initialized');
 
-        // SET REFERENCES
-        user_manager = UserManager(_user_manager);
+        // SET REF
         task_manager = _task_manager;
 
         // BLOCK FURTHER MODIFICATIONS

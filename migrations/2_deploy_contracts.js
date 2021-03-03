@@ -1,5 +1,4 @@
 const contracts = [
-    'UserManager',
     'DeviceManager',
     'TaskManager'
 ]

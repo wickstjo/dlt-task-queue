@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 // IMPORTS
 import { Task } from './task.sol';
-import { UserManager } from './user_manager.sol';
 import { DeviceManager } from './device_manager.sol';
 
 contract TaskManager {
@@ -22,8 +21,7 @@ contract TaskManager {
     // INIT STATUS
     bool public initialized = false;
 
-    // MANAGER REFERENCES
-    UserManager public user_manager;
+    // DEVICE MANAGER REF
     DeviceManager public device_manager;
 
     // FETCH SPECIFIC TASK
@@ -39,21 +37,22 @@ contract TaskManager {
     // ADD NEW TASK
     function create(
         string memory device,
-        string memory encryption_key
+        string memory encryption_key,
+        string memory params
     ) public {
 
         // IF CONTRACT HAS BEEN INITIALIZED
-        // SENDER IS A REGISTERED USER
         require(initialized, 'contracts have not been initialized');
-        require(user_manager.exists(msg.sender), 'you need to be registered');
         
         // IF THE DEVICE EXISTS
         // IF THE DEVICE IS OWNED BY THE SENDER
+        // IF THE DEVICE IS SET TO ACTIVE
         require(device_manager.exists(device), 'the device is not registered');
         require(msg.sender == device_manager.fetch_device(device).owner(), 'you are not the device owner');
+        require(device_manager.fetch_device(device).active(), 'the device is not active');
 
         // INSTANTIATE & INDEX NEW TASK
-        Task task = new Task(msg.sender, device, encryption_key);
+        Task task = new Task(msg.sender, device, encryption_key, params);
         tasks[address(task)] = task;
 
         // ASSIGN THE TASK TO THE DEVICE
@@ -82,9 +81,6 @@ contract TaskManager {
             storage_location: storage_location
         });
 
-        // ADD REFERENCE TO THE TASK CREATOR
-        user_manager.fetch(task.creator()).add_result(task_address);
-
         // CLEAR TASK FROM DEVICE BACKLOG & DESTROY THE TASK
         device_manager.fetch_device(task.device()).clear_task(task_address, true);
         task.destroy();
@@ -107,17 +103,13 @@ contract TaskManager {
         task.destroy();
     }
 
-    // SET STATIC VARIABLES
-    function init(
-        address _user_manager,
-        address _device_manager
-    ) public {
+    // INITIALIZE
+    function init(address _device_manager) public {
 
         // IF THE CONTRACT HAS NOT BEEN INITIALIZED
         require(!initialized, 'contract has already been initialized');
 
-        // SET REFERENCES
-        user_manager = UserManager(_user_manager);
+        // SET REF
         device_manager = DeviceManager(_device_manager);
 
         // BLOCK FURTHER MODIFICATION

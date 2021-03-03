@@ -7,23 +7,26 @@ contract Task {
     address public creator;
     string public device;
 
-    // PUBLIC ENCRYPTION KEY
+    // PUBLIC ENCRYPTION KEY & ADDITIONAL PARAMS
     string public encryption_key;
+    string public params;
 
     // TASK MANAGER REFERENCE
-    address task_manager;
+    address public task_manager;
 
     // WHEN CREATED..
     constructor(
         address _creator,
         string memory _device,
-        string memory _encryption_key
+        string memory _encryption_key,
+        string memory _params
     ) {
 
         // SET STATIC PARAMS
         creator = _creator;
         device = _device;
         encryption_key = _encryption_key;
+        params = _params;
         task_manager = msg.sender;
     }
 

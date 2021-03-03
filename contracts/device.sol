@@ -6,6 +6,9 @@ contract Device {
     // THE OWNER OF THE DEVICE
     address public owner;
 
+    // ACTIVE STATUS
+    bool public active;
+
     // THE DEVICES UNIQUE ETH ACCOUNT
     address public account;
 
@@ -22,9 +25,24 @@ contract Device {
     event modification(address[] backlog);
 
     // UPON CREATION, SET STATIC PARAMS
-    constructor(address _owner, address _task_manager) {
+    constructor(
+        address _owner,
+        address _account,
+        address _task_manager
+    ) {
         owner = _owner;
+        account = _account;
         task_manager = _task_manager;
+    }
+
+    // TOGGLE ACTIVE STATUS
+    function toggle_active() public {
+
+        // IF THE SENDER IS THE OWNER
+        require(msg.sender == owner, 'permission denied');
+
+        // TOGGLE ACTIVE STATUS
+        active = !active;
     }
 
     // ASSIGN TASK TO DEVICE
